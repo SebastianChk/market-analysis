@@ -276,7 +276,7 @@
     <button class="period-btn" data-period="3mo">3 months</button>
     <button class="period-btn active" data-period="6mo">6 months</button>
     <label class="mock-toggle">
-      <input type="checkbox" id="mock-toggle" checked>
+      <input type="checkbox" id="mock-toggle">
       Show mock data
     </label>
   </div>
@@ -310,8 +310,8 @@
       <div class="chart-wrap"><canvas id="chart-live"></canvas></div>
     </div>
     <div class="chart-card">
-      <h3>Historical Vacancies</h3>
-      <p class="chart-note" id="hist-chart-note">Rolling average of total job postings (absolute count).</p>
+      <h3>6-Month Posting Volume</h3>
+      <p class="chart-note" id="hist-chart-note">Total postings over the rolling 6-month window.</p>
       <div class="chart-wrap"><canvas id="chart-hist"></canvas></div>
     </div>
   </div>
@@ -344,7 +344,7 @@ let categories = {};
 let activeCategory = "All";
 let activeSkills = new Set();
 let activePeriod = "6mo";
-let showMock = true;
+let showMock = false;
 let sortCol = null;
 let sortAsc = true;
 let charts = {};
@@ -436,7 +436,7 @@ function renderCharts() {
   document.getElementById("rank-chart-note").textContent =
     `Lower rank = more in demand. ${periodLabel()} rolling window.`;
   document.getElementById("hist-chart-note").textContent =
-    `Rolling ${periodLabel()} average of total job postings (absolute count).`;
+    `Total postings over the rolling ${periodLabel()} window.`;
 }
 
 // ── Skill buttons ─────────────────────────────────────────────────────────────
@@ -531,12 +531,17 @@ function renderCards(rows) {
     addCard(container, "Biggest Mover", `+${parseNum(byMover[0].rank_yoy_change)} places`, `${byMover[0].description} (now #${rankDisplay(byMover[0])})`, byMover[0]);
 }
 
-function addCard(container, label, value, sub) {
+function addCard(container, label, value, sub, row) {
+  const hist = row ? parseIntNum(row.historical_vacancies_absolute) : null;
+  const badge = hist != null
+    ? `<div><span class="card-badge">6mo total: ${hist.toLocaleString()} postings</span></div>`
+    : "";
   container.insertAdjacentHTML("beforeend", `
     <div class="card">
       <div class="card-label">${label}</div>
       <div class="card-value">${value}</div>
       <div class="card-sub">${sub}</div>
+      ${badge}
     </div>`);
 }
 
@@ -546,7 +551,7 @@ const COLUMN_DEFS = [
   { key: "rank",                          label: () => `Demand Rank (${activePeriod})`, fallback: "rank_6mo" },
   { key: "rank_yoy_change",               label: () => "Rank YoY" },
   { key: "live_jobs",                     label: () => "Live Jobs" },
-  { key: "historical_vacancies_absolute", label: () => `Postings (${activePeriod} rolling)` },
+  { key: "historical_vacancies_absolute", label: () => `Total Postings (last ${activePeriod})` },
   { key: "historical_vacancies_relative", label: () => `Market Share (${activePeriod} rolling)` },
 ];
 
