@@ -2,9 +2,9 @@ name: Scrape Job Market Data
 
 on:
   schedule:
-    # Runs every day at 08:00 UTC.
+    # Runs every day at 00:27 UTC.
     # https://crontab.guru
-    - cron: "0 8 * * *"
+    - cron: "27 0 * * *"
 
   # Allows you to trigger the workflow manually from the Actions tab
   workflow_dispatch:
