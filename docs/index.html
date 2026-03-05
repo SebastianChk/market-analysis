@@ -275,10 +275,6 @@
     <label>Period:</label>
     <button class="period-btn" data-period="3mo">3 months</button>
     <button class="period-btn active" data-period="6mo">6 months</button>
-    <label class="mock-toggle">
-      <input type="checkbox" id="mock-toggle">
-      Show mock data
-    </label>
   </div>
 
   <div id="cat-tabs" class="cat-tabs"></div>
@@ -297,7 +293,13 @@
     </table>
   </div>
 
-  <p class="section-heading">Trends over time</p>
+  <div style="display:flex; align-items:baseline; gap:1rem; margin-top:2rem;">
+    <p class="section-heading" style="margin-top:0">Trends over time</p>
+    <label class="mock-toggle">
+      <input type="checkbox" id="mock-toggle">
+      Show mock data
+    </label>
+  </div>
   <div class="charts">
     <div class="chart-card">
       <h3>Demand Rank</h3>
