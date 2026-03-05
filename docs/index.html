@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Market Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #212529;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e9ecef;
+      padding: 1rem 2rem;
+    }
+
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+
+    #status {
+      text-align: center;
+      padding: 4rem;
+      color: #6c757d;
+      font-size: .95rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: none;
+    }
+
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #6c757d;
+      margin: 2rem 0 1rem;
+    }
+
+    /* ── Stat cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+
+    .card-label { font-size: .75rem; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
+    .card-value { font-size: 1.6rem; font-weight: 700; margin: .25rem 0; }
+    .card-sub   { font-size: .8rem; color: #6c757d; }
+    .up   { color: #198754; }
+    .down { color: #dc3545; }
+
+    /* ── Charts ── */
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .chart-card h3 {
+      font-size: .9rem;
+      font-weight: 600;
+      margin-bottom: .25rem;
+      color: #495057;
+    }
+
+    .chart-note {
+      font-size: .75rem;
+      color: #adb5bd;
+      margin-bottom: 1rem;
+    }
+
+    .chart-wrap { position: relative; height: 260px; }
+
+    /* ── Skill selector ── */
+    .skill-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .skill-filter label { font-size: .85rem; color: #6c757d; margin-right: .25rem; }
+
+    .skill-btn {
+      padding: .3rem .75rem;
+      border-radius: 999px;
+      border: 1px solid #dee2e6;
+      background: #fff;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .skill-btn.active {
+      background: #0d6efd;
+      border-color: #0d6efd;
+      color: #fff;
+    }
+
+    /* ── Data table ── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      overflow: auto;
+      margin-bottom: 2rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th {
+      background: #f8f9fa;
+      padding: .6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #e9ecef;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { background: #e9ecef; }
+    th .sort-icon { color: #adb5bd; margin-left: .25rem; }
+    td { padding: .55rem 1rem; border-bottom: 1px solid #f1f3f5; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9fa; }
+
+    /* ── Run history ── */
+    .run-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 2rem; }
+
+    .run-row {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: .75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .run-date { font-weight: 600; font-size: .9rem; }
+    .run-links { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+    .run-link {
+      font-size: .75rem;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      border: 1px solid #dee2e6;
+      text-decoration: none;
+      color: #495057;
+      transition: all .15s;
+    }
+    .run-link:hover { background: #0d6efd; border-color: #0d6efd; color: #fff; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: .8rem;
+      color: #adb5bd;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📊 Job Market Dashboard</h1>
+</header>
+
+<div id="status">Loading data…</div>
+
+<main id="main">
+
+  <p class="section-heading">Latest snapshot</p>
+  <div class="cards" id="cards"></div>
+
+  <p class="section-heading">Trends over time</p>
+  <div class="skill-filter">
+    <label>Filter skills:</label>
+    <div id="skill-btns"></div>
+  </div>
+  <div class="charts">
+    <div class="chart-card">
+      <h3>Demand Rank</h3>
+      <p class="chart-note">Lower rank = more in demand. 6-month rolling window.</p>
+      <div class="chart-wrap"><canvas id="chart-rank"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Live Job Vacancies</h3>
+      <p class="chart-note">Active listings at time of scrape.</p>
+      <div class="chart-wrap"><canvas id="chart-live"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Historical Vacancies</h3>
+      <p class="chart-note">Rolling 6-month average of total job postings (absolute count).</p>
+      <div class="chart-wrap"><canvas id="chart-hist"></canvas></div>
+    </div>
+  </div>
+
+  <p class="section-heading">Latest data</p>
+  <div class="table-wrap">
+    <table id="data-table">
+      <thead><tr id="table-head"></tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <p class="section-heading">All runs</p>
+  <div class="run-list" id="run-list"></div>
+
+</main>
+
+<footer>
+  Updated automatically via GitHub Actions.
+</footer>
+
+<script>
+// ── Palette ──────────────────────────────────────────────────────────────────
+const PALETTE = [
+  "#0d6efd","#198754","#dc3545","#fd7e14","#6f42c1",
+  "#20c997","#d63384","#0dcaf0","#ffc107","#6c757d",
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const parseNum    = s => parseFloat((s || "").replace(/[£,% ]/g, "")) || null;
+const parseIntNum = s => { const n = parseInt((s || "").replace(/,/g, ""), 10); return isNaN(n) ? null : n; };
+const changeClass = v => (v == null || isNaN(v)) ? "" : v > 0 ? "up" : v < 0 ? "down" : "";
+
+// ── State ────────────────────────────────────────────────────────────────────
+let allRuns = [];
+let activeSkills = new Set();
+let sortCol = null;
+let sortAsc = true;
+let charts = {};
+
+// ── Charts ───────────────────────────────────────────────────────────────────
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function buildChart(id, labels, datasets, extraScaleY = {}) {
+  const ctx = document.getElementById(id).getContext("2d");
+  charts[id] = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { bodyFont: { size: 11 }, titleFont: { size: 11 } },
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { ticks: { font: { size: 10 } }, beginAtZero: false, ...extraScaleY },
+      },
+    },
+  });
+}
+
+function renderCharts() {
+  destroyCharts();
+  const labels = allRuns.map(r => r.date);
+  const skills = [...activeSkills];
+
+  const makeDatasets = valueFn => skills.map((skill, i) => ({
+    label: skill,
+    data: allRuns.map(run => {
+      const row = run.rows.find(r => r.description === skill);
+      return row ? valueFn(row) : null;
+    }),
+    borderColor: PALETTE[i % PALETTE.length],
+    backgroundColor: PALETTE[i % PALETTE.length] + "22",
+    tension: 0.3,
+    pointRadius: 4,
+    spanGaps: true,
+  }));
+
+  buildChart("chart-rank", labels, makeDatasets(r => parseIntNum(r.rank_6mo)), { reverse: true });
+  buildChart("chart-live", labels, makeDatasets(r => parseIntNum(r.live_jobs)));
+  buildChart("chart-hist", labels, makeDatasets(r => parseIntNum(r.historical_vacancies_absolute)));
+}
+
+// ── Skill buttons ─────────────────────────────────────────────────────────────
+function renderSkillButtons(skills) {
+  const container = document.getElementById("skill-btns");
+  container.innerHTML = "";
+  skills.forEach(skill => {
+    const btn = document.createElement("button");
+    btn.className = "skill-btn active";
+    btn.textContent = skill;
+    btn.addEventListener("click", () => {
+      if (activeSkills.has(skill)) {
+        activeSkills.delete(skill);
+        btn.classList.remove("active");
+      } else {
+        activeSkills.add(skill);
+        btn.classList.add("active");
+      }
+      renderCharts();
+    });
+    container.appendChild(btn);
+  });
+}
+
+// ── Summary cards ─────────────────────────────────────────────────────────────
+function renderCards(rows) {
+  const container = document.getElementById("cards");
+  container.innerHTML = "";
+
+  const totalLive = rows.reduce((s, r) => s + (parseIntNum(r.live_jobs) || 0), 0);
+  addCard(container, "Total Live Jobs", totalLive.toLocaleString(), rows.length + " skills tracked");
+
+  const byRank = [...rows].filter(r => parseIntNum(r.rank_6mo))
+    .sort((a, b) => parseIntNum(a.rank_6mo) - parseIntNum(b.rank_6mo));
+  if (byRank[0])
+    addCard(container, "Most In-Demand", `#${byRank[0].rank_6mo}`, byRank[0].description);
+  if (byRank[byRank.length - 1] && byRank.length > 1)
+    addCard(container, "Least In-Demand", `#${byRank[byRank.length - 1].rank_6mo}`, byRank[byRank.length - 1].description);
+
+  const byLive = [...rows].sort((a, b) => (parseIntNum(b.live_jobs) || 0) - (parseIntNum(a.live_jobs) || 0));
+  if (byLive[0])
+    addCard(container, "Most Live Jobs", byLive[0].live_jobs, byLive[0].description);
+}
+
+function addCard(container, label, value, sub) {
+  container.insertAdjacentHTML("beforeend", `
+    <div class="card">
+      <div class="card-label">${label}</div>
+      <div class="card-value">${value}</div>
+      <div class="card-sub">${sub}</div>
+    </div>`);
+}
+
+// ── Data table ────────────────────────────────────────────────────────────────
+const COLUMN_LABELS = {
+  description:                   "Skill",
+  rank_6mo:                      "Demand Rank (6mo)",
+  rank_yoy_change:               "Rank YoY",
+  live_jobs:                     "Live Jobs",
+  historical_vacancies_absolute: "Hist. Vacancies (6mo avg)",
+  historical_vacancies_relative: "Hist. Relative",
+};
+
+function renderTable(rows) {
+  const thead = document.getElementById("table-head");
+  const tbody = document.getElementById("table-body");
+  const cols  = Object.keys(COLUMN_LABELS);
+
+  thead.innerHTML = cols.map(col => {
+    const icon = sortCol === col ? (sortAsc ? "▲" : "▼") : "⇅";
+    return `<th data-col="${col}">${COLUMN_LABELS[col]} <span class="sort-icon">${icon}</span></th>`;
+  }).join("");
+
+  thead.querySelectorAll("th").forEach(th =>
+    th.addEventListener("click", () => {
+      sortAsc = (sortCol === th.dataset.col) ? !sortAsc : true;
+      sortCol = th.dataset.col;
+      renderTable(rows);
+    })
+  );
+
+  const sorted = [...rows].sort((a, b) => {
+    if (!sortCol) return 0;
+    const av = parseNum(a[sortCol]) ?? a[sortCol] ?? "";
+    const bv = parseNum(b[sortCol]) ?? b[sortCol] ?? "";
+    return (sortAsc ? 1 : -1) * (av < bv ? -1 : av > bv ? 1 : 0);
+  });
+
+  tbody.innerHTML = sorted.map(row =>
+    "<tr>" + cols.map(col => {
+      let val = row[col] ?? "—";
+      if (col === "rank_yoy_change") {
+        const n = parseNum(val);
+        val = `<span class="${changeClass(n)}">${val}</span>`;
+      }
+      return `<td>${val}</td>`;
+    }).join("") + "</tr>"
+  ).join("");
+}
+
+// ── Run history ───────────────────────────────────────────────────────────────
+function renderRunList(runs) {
+  document.getElementById("run-list").innerHTML = runs.map(run => `
+    <div class="run-row">
+      <span class="run-date">${run.date}</span>
+      <div class="run-links">
+        ${Object.entries(run.files).sort(([a],[b]) => a.localeCompare(b))
+          .map(([label, url]) => `<a class="run-link" href="${url}" download>${label}</a>`)
+          .join("")}
+      </div>
+    </div>`).join("");
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const status = document.getElementById("status");
+
+  let manifest;
+  try {
+    const res = await fetch("manifest.json");
+    if (!res.ok) throw new Error(res.statusText);
+    manifest = await res.json();
+  } catch {
+    status.textContent = "Failed to load manifest.json — has the scraper run yet?";
+    return;
+  }
+
+  if (!manifest.runs?.length) {
+    status.textContent = "No scrape runs found yet.";
+    return;
+  }
+
+  const loaded = await Promise.all(
+    [...manifest.runs].reverse().map(async run => {
+      const url = run.files["clean.json"];
+      if (!url) return null;
+      try {
+        const res = await fetch(url);
+        return res.ok ? { date: run.date, rows: await res.json(), files: run.files } : null;
+      } catch { return null; }
+    })
+  );
+
+  allRuns = loaded.filter(Boolean);
+  if (!allRuns.length) { status.textContent = "Data files could not be loaded."; return; }
+
+  const skillSet = new Set(allRuns.flatMap(r => r.rows.map(row => row.description)));
+  activeSkills   = new Set(skillSet);
+
+  status.style.display = "none";
+  document.getElementById("main").style.display = "block";
+
+  const latestRows = allRuns[allRuns.length - 1].rows;
+
+  renderSkillButtons([...skillSet]);
+  renderCards(latestRows);
+  renderCharts();
+  renderTable(latestRows);
+  renderRunList(manifest.runs);
+}
+
+init();
+</script>
+</body>
+</html>

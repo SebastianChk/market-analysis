@@ -1,0 +1,51 @@
+{
+  "generated": "2026-03-05",
+  "runs": [
+    {
+      "date": "2026-03-05",
+      "files": {
+        "raw.json": "../data/jobdata_2026-03-05_raw.json",
+        "raw.csv": "../data/jobdata_2026-03-05_raw.csv",
+        "p1.html": "../data/jobdata_2026-03-05_p1.html",
+        "clean.json": "../data/jobdata_2026-03-05.json",
+        "clean.csv": "../data/jobdata_2026-03-05.csv"
+      }
+    },
+    {
+      "date": "2026-02-26",
+      "files": {
+        "clean.json": "../data/jobdata_2026-02-26.json"
+      }
+    },
+    {
+      "date": "2026-02-19",
+      "files": {
+        "clean.json": "../data/jobdata_2026-02-19.json"
+      }
+    },
+    {
+      "date": "2026-02-12",
+      "files": {
+        "clean.json": "../data/jobdata_2026-02-12.json"
+      }
+    },
+    {
+      "date": "2026-02-05",
+      "files": {
+        "clean.json": "../data/jobdata_2026-02-05.json"
+      }
+    },
+    {
+      "date": "2026-01-29",
+      "files": {
+        "clean.json": "../data/jobdata_2026-01-29.json"
+      }
+    },
+    {
+      "date": "2026-01-22",
+      "files": {
+        "clean.json": "../data/jobdata_2026-01-22.json"
+      }
+    }
+  ]
+}
