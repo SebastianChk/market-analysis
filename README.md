@@ -1,11 +1,13 @@
-# Job Market Scraper
+# ***[Vibe Coded]*** Job Market Scraper
+
+My first attempt at mostly vibe-coding something for the purpose of a demo!
 
 Automated weekly scraper for job market data, storing results as CSV, JSON,
 and HTML snapshots. Data is committed directly to this repository on each run.
 
 ## Output files
 
-Each run produces the following files in `data/`:
+Each run produces the following files in `docs/data/`:
 
 | File | Contents |
 |------|----------|

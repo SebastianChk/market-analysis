@@ -64,6 +64,15 @@
     .card-label { font-size: .75rem; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
     .card-value { font-size: 1.6rem; font-weight: 700; margin: .25rem 0; }
     .card-sub   { font-size: .8rem; color: #6c757d; }
+    .card-badge {
+      display: inline-block;
+      margin-top: .5rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      background: #f1f3f5;
+      font-size: .7rem;
+      color: #6c757d;
+    }
     .up   { color: #198754; }
     .down { color: #dc3545; }
 
@@ -97,6 +106,33 @@
 
     .chart-wrap { position: relative; height: 260px; }
 
+    /* ── Category tabs ── */
+    .cat-tabs {
+      display: flex;
+      border-bottom: 2px solid #e9ecef;
+      margin-bottom: 1rem;
+    }
+
+    .cat-tab {
+      padding: .5rem 1.1rem;
+      border: none;
+      background: none;
+      font-size: .85rem;
+      cursor: pointer;
+      color: #6c757d;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+    }
+
+    .cat-tab:hover { color: #212529; }
+
+    .cat-tab.active {
+      color: #0d6efd;
+      border-bottom-color: #0d6efd;
+      font-weight: 600;
+    }
+
     /* ── Skill selector ── */
     .skill-filter {
       display: flex;
@@ -105,8 +141,6 @@
       margin-bottom: 1.5rem;
       align-items: center;
     }
-
-    .skill-filter label { font-size: .85rem; color: #6c757d; margin-right: .25rem; }
 
     .skill-btn {
       padding: .3rem .75rem;
@@ -121,6 +155,46 @@
     .skill-btn.active {
       background: #0d6efd;
       border-color: #0d6efd;
+      color: #fff;
+    }
+
+    /* ── Period selector ── */
+    .period-filter {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .period-filter label { font-size: .85rem; color: #6c757d; }
+
+    /* ── Mock data toggle ── */
+    .mock-toggle {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      margin-left: auto;
+      font-size: .8rem;
+      color: #6c757d;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mock-toggle input { cursor: pointer; }
+
+    .period-btn {
+      padding: .3rem .75rem;
+      border-radius: 999px;
+      border: 1px solid #dee2e6;
+      background: #fff;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .period-btn.active {
+      background: #495057;
+      border-color: #495057;
       color: #fff;
     }
 
@@ -197,18 +271,37 @@
 
 <main id="main">
 
+  <div class="period-filter">
+    <label>Period:</label>
+    <button class="period-btn" data-period="3mo">3 months</button>
+    <button class="period-btn active" data-period="6mo">6 months</button>
+    <label class="mock-toggle">
+      <input type="checkbox" id="mock-toggle" checked>
+      Show mock data
+    </label>
+  </div>
+
+  <div id="cat-tabs" class="cat-tabs"></div>
+  <div class="skill-filter">
+    <div id="skill-btns"></div>
+  </div>
+
   <p class="section-heading">Latest snapshot</p>
   <div class="cards" id="cards"></div>
 
-  <p class="section-heading">Trends over time</p>
-  <div class="skill-filter">
-    <label>Filter skills:</label>
-    <div id="skill-btns"></div>
+  <p class="section-heading">Latest data</p>
+  <div class="table-wrap">
+    <table id="data-table">
+      <thead><tr id="table-head"></tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
   </div>
+
+  <p class="section-heading">Trends over time</p>
   <div class="charts">
     <div class="chart-card">
       <h3>Demand Rank</h3>
-      <p class="chart-note">Lower rank = more in demand. 6-month rolling window.</p>
+      <p class="chart-note" id="rank-chart-note">Lower rank = more in demand.</p>
       <div class="chart-wrap"><canvas id="chart-rank"></canvas></div>
     </div>
     <div class="chart-card">
@@ -218,17 +311,9 @@
     </div>
     <div class="chart-card">
       <h3>Historical Vacancies</h3>
-      <p class="chart-note">Rolling 6-month average of total job postings (absolute count).</p>
+      <p class="chart-note" id="hist-chart-note">Rolling average of total job postings (absolute count).</p>
       <div class="chart-wrap"><canvas id="chart-hist"></canvas></div>
     </div>
-  </div>
-
-  <p class="section-heading">Latest data</p>
-  <div class="table-wrap">
-    <table id="data-table">
-      <thead><tr id="table-head"></tr></thead>
-      <tbody id="table-body"></tbody>
-    </table>
   </div>
 
   <p class="section-heading">All runs</p>
@@ -254,10 +339,46 @@ const changeClass = v => (v == null || isNaN(v)) ? "" : v > 0 ? "up" : v < 0 ? "
 
 // ── State ────────────────────────────────────────────────────────────────────
 let allRuns = [];
+let allSkills = [];
+let categories = {};
+let activeCategory = "All";
 let activeSkills = new Set();
+let activePeriod = "6mo";
+let showMock = true;
 let sortCol = null;
 let sortAsc = true;
 let charts = {};
+let manifest = null;
+
+// ── Filtered runs ─────────────────────────────────────────────────────────────
+function visibleRuns() {
+  if (showMock) return allRuns;
+  return allRuns.filter(run => !run.isMock);
+}
+
+function activeSkillRows(rows) {
+  if (!activeSkills.size) return rows;
+  return rows.filter(r => activeSkills.has(r.description));
+}
+
+function skillsForCategory(cat) {
+  if (cat === "All") return allSkills;
+  const catSkills = categories[cat] || [];
+  // Only return skills that actually exist in the loaded data.
+  return catSkills.filter(s => allSkills.includes(s));
+}
+
+// ── Period helpers ────────────────────────────────────────────────────────────
+function periodRows(run) {
+  // Support both new format (period field) and old format (no period, single set of rows).
+  const hasPeriod = run.rows.some(r => r.period);
+  if (!hasPeriod) return run.rows;
+  return run.rows.filter(r => r.period === activePeriod);
+}
+
+function periodLabel() {
+  return activePeriod === "3mo" ? "3-month" : "6-month";
+}
 
 // ── Charts ───────────────────────────────────────────────────────────────────
 function destroyCharts() {
@@ -288,13 +409,14 @@ function buildChart(id, labels, datasets, extraScaleY = {}) {
 
 function renderCharts() {
   destroyCharts();
-  const labels = allRuns.map(r => r.date);
+  const runs = visibleRuns();
+  const labels = runs.map(r => r.date);
   const skills = [...activeSkills];
 
   const makeDatasets = valueFn => skills.map((skill, i) => ({
     label: skill,
-    data: allRuns.map(run => {
-      const row = run.rows.find(r => r.description === skill);
+    data: runs.map(run => {
+      const row = periodRows(run).find(r => r.description === skill);
       return row ? valueFn(row) : null;
     }),
     borderColor: PALETTE[i % PALETTE.length],
@@ -304,9 +426,17 @@ function renderCharts() {
     spanGaps: true,
   }));
 
-  buildChart("chart-rank", labels, makeDatasets(r => parseIntNum(r.rank_6mo)), { reverse: true });
+  // Use rank field (new format) or rank_6mo (old format) for backwards compat.
+  const rankValue = r => parseIntNum(r.rank ?? r.rank_6mo);
+
+  buildChart("chart-rank", labels, makeDatasets(rankValue), { reverse: true });
   buildChart("chart-live", labels, makeDatasets(r => parseIntNum(r.live_jobs)));
   buildChart("chart-hist", labels, makeDatasets(r => parseIntNum(r.historical_vacancies_absolute)));
+
+  document.getElementById("rank-chart-note").textContent =
+    `Lower rank = more in demand. ${periodLabel()} rolling window.`;
+  document.getElementById("hist-chart-note").textContent =
+    `Rolling ${periodLabel()} average of total job postings (absolute count).`;
 }
 
 // ── Skill buttons ─────────────────────────────────────────────────────────────
@@ -325,10 +455,59 @@ function renderSkillButtons(skills) {
         activeSkills.add(skill);
         btn.classList.add("active");
       }
-      renderCharts();
+      refreshAll();
     });
     container.appendChild(btn);
   });
+}
+
+// ── Period buttons ────────────────────────────────────────────────────────────
+function initPeriodButtons() {
+  document.querySelectorAll(".period-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activePeriod = btn.dataset.period;
+      document.querySelectorAll(".period-btn").forEach(b => b.classList.toggle("active", b === btn));
+      refreshAll();
+    });
+  });
+}
+
+// ── Category tabs ─────────────────────────────────────────────────────────────
+function initCategoryTabs() {
+  const el = document.getElementById("cat-tabs");
+  const cats = ["All", ...Object.keys(categories)];
+  el.innerHTML = cats.map(cat =>
+    `<button class="cat-tab${cat === "All" ? " active" : ""}" data-cat="${cat}">${cat}</button>`
+  ).join("");
+
+  el.querySelectorAll(".cat-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      el.querySelectorAll(".cat-tab").forEach(b => b.classList.toggle("active", b === btn));
+      const skills = skillsForCategory(activeCategory);
+      activeSkills = new Set(skills);
+      renderSkillButtons(skills);
+      refreshAll();
+    });
+  });
+}
+
+// ── Mock toggle ───────────────────────────────────────────────────────────────
+function initMockToggle() {
+  document.getElementById("mock-toggle").addEventListener("change", e => {
+    showMock = e.target.checked;
+    refreshAll();
+  });
+}
+
+function refreshAll() {
+  const runs = visibleRuns();
+  const latestRows = runs.length ? periodRows(runs[runs.length - 1]) : [];
+  const filteredRows = activeSkillRows(latestRows);
+  renderCards(filteredRows);
+  renderCharts();
+  renderTable(filteredRows);
+  renderRunList(manifest.runs);
 }
 
 // ── Summary cards ─────────────────────────────────────────────────────────────
@@ -336,19 +515,20 @@ function renderCards(rows) {
   const container = document.getElementById("cards");
   container.innerHTML = "";
 
-  const totalLive = rows.reduce((s, r) => s + (parseIntNum(r.live_jobs) || 0), 0);
-  addCard(container, "Total Live Jobs", totalLive.toLocaleString(), rows.length + " skills tracked");
-
-  const byRank = [...rows].filter(r => parseIntNum(r.rank_6mo))
-    .sort((a, b) => parseIntNum(a.rank_6mo) - parseIntNum(b.rank_6mo));
+  const rankField = r => parseIntNum(r.rank ?? r.rank_6mo);
+  const rankDisplay = r => r.rank ?? r.rank_6mo;
+  const byRank = [...rows].filter(r => rankField(r)).sort((a, b) => rankField(a) - rankField(b));
   if (byRank[0])
-    addCard(container, "Most In-Demand", `#${byRank[0].rank_6mo}`, byRank[0].description);
+    addCard(container, "Most In-Demand", `#${rankDisplay(byRank[0])}`, byRank[0].description, byRank[0]);
   if (byRank[byRank.length - 1] && byRank.length > 1)
-    addCard(container, "Least In-Demand", `#${byRank[byRank.length - 1].rank_6mo}`, byRank[byRank.length - 1].description);
+    addCard(container, "Least In-Demand", `#${rankDisplay(byRank[byRank.length - 1])}`, byRank[byRank.length - 1].description, byRank[byRank.length - 1]);
 
-  const byLive = [...rows].sort((a, b) => (parseIntNum(b.live_jobs) || 0) - (parseIntNum(a.live_jobs) || 0));
-  if (byLive[0])
-    addCard(container, "Most Live Jobs", byLive[0].live_jobs, byLive[0].description);
+  // Weighted mover: rank_yoy_change divided by current rank.
+  // A jump from #10→#1 scores far higher than #400→#390.
+  const moverScore = r => parseNum(r.rank_yoy_change) / rankField(r);
+  const byMover = [...rows].filter(r => rankField(r) && parseNum(r.rank_yoy_change) > 0).sort((a, b) => moverScore(b) - moverScore(a));
+  if (byMover[0])
+    addCard(container, "Biggest Mover", `+${parseNum(byMover[0].rank_yoy_change)} places`, `${byMover[0].description} (now #${rankDisplay(byMover[0])})`, byMover[0]);
 }
 
 function addCard(container, label, value, sub) {
@@ -361,23 +541,22 @@ function addCard(container, label, value, sub) {
 }
 
 // ── Data table ────────────────────────────────────────────────────────────────
-const COLUMN_LABELS = {
-  description:                   "Skill",
-  rank_6mo:                      "Demand Rank (6mo)",
-  rank_yoy_change:               "Rank YoY",
-  live_jobs:                     "Live Jobs",
-  historical_vacancies_absolute: "Hist. Vacancies (6mo avg)",
-  historical_vacancies_relative: "Hist. Relative",
-};
+const COLUMN_DEFS = [
+  { key: "description",                   label: () => "Skill" },
+  { key: "rank",                          label: () => `Demand Rank (${activePeriod})`, fallback: "rank_6mo" },
+  { key: "rank_yoy_change",               label: () => "Rank YoY" },
+  { key: "live_jobs",                     label: () => "Live Jobs" },
+  { key: "historical_vacancies_absolute", label: () => `Postings (${activePeriod} rolling)` },
+  { key: "historical_vacancies_relative", label: () => `Market Share (${activePeriod} rolling)` },
+];
 
 function renderTable(rows) {
   const thead = document.getElementById("table-head");
   const tbody = document.getElementById("table-body");
-  const cols  = Object.keys(COLUMN_LABELS);
 
-  thead.innerHTML = cols.map(col => {
-    const icon = sortCol === col ? (sortAsc ? "▲" : "▼") : "⇅";
-    return `<th data-col="${col}">${COLUMN_LABELS[col]} <span class="sort-icon">${icon}</span></th>`;
+  thead.innerHTML = COLUMN_DEFS.map(col => {
+    const icon = sortCol === col.key ? (sortAsc ? "▲" : "▼") : "⇅";
+    return `<th data-col="${col.key}">${col.label()} <span class="sort-icon">${icon}</span></th>`;
   }).join("");
 
   thead.querySelectorAll("th").forEach(th =>
@@ -390,15 +569,16 @@ function renderTable(rows) {
 
   const sorted = [...rows].sort((a, b) => {
     if (!sortCol) return 0;
-    const av = parseNum(a[sortCol]) ?? a[sortCol] ?? "";
-    const bv = parseNum(b[sortCol]) ?? b[sortCol] ?? "";
+    const getVal = r => r[sortCol] ?? (COLUMN_DEFS.find(c => c.key === sortCol)?.fallback ? r[COLUMN_DEFS.find(c => c.key === sortCol).fallback] : undefined);
+    const av = parseNum(getVal(a)) ?? getVal(a) ?? "";
+    const bv = parseNum(getVal(b)) ?? getVal(b) ?? "";
     return (sortAsc ? 1 : -1) * (av < bv ? -1 : av > bv ? 1 : 0);
   });
 
   tbody.innerHTML = sorted.map(row =>
-    "<tr>" + cols.map(col => {
-      let val = row[col] ?? "—";
-      if (col === "rank_yoy_change") {
+    "<tr>" + COLUMN_DEFS.map(col => {
+      let val = row[col.key] ?? (col.fallback ? row[col.fallback] : null) ?? "—";
+      if (col.key === "rank_yoy_change") {
         const n = parseNum(val);
         val = `<span class="${changeClass(n)}">${val}</span>`;
       }
@@ -408,23 +588,27 @@ function renderTable(rows) {
 }
 
 // ── Run history ───────────────────────────────────────────────────────────────
-function renderRunList(runs) {
-  document.getElementById("run-list").innerHTML = runs.map(run => `
+function renderRunList(manifestRuns) {
+  const mockDates = new Set(allRuns.filter(r => r.isMock).map(r => r.date));
+  const visible   = manifestRuns.filter(r => showMock || !mockDates.has(r.date));
+  document.getElementById("run-list").innerHTML = visible.map(run => {
+    const isMock = mockDates.has(run.date);
+    return `
     <div class="run-row">
-      <span class="run-date">${run.date}</span>
+      <span class="run-date">${run.date}${isMock ? ' <span style="font-size:.7rem;color:#adb5bd;font-weight:400">(mock)</span>' : ""}</span>
       <div class="run-links">
         ${Object.entries(run.files).sort(([a],[b]) => a.localeCompare(b))
           .map(([label, url]) => `<a class="run-link" href="${url}" download>${label}</a>`)
           .join("")}
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 async function init() {
   const status = document.getElementById("status");
 
-  let manifest;
   try {
     const res = await fetch("manifest.json");
     if (!res.ok) throw new Error(res.statusText);
@@ -450,22 +634,35 @@ async function init() {
     })
   );
 
-  allRuns = loaded.filter(Boolean);
+  allRuns = loaded.filter(Boolean).map(run => ({
+    ...run,
+    isMock: run.rows.some(r => r.mock === true),
+  }));
   if (!allRuns.length) { status.textContent = "Data files could not be loaded."; return; }
 
-  const skillSet = new Set(allRuns.flatMap(r => r.rows.map(row => row.description)));
-  activeSkills   = new Set(skillSet);
+  allSkills = [...new Set(allRuns.flatMap(r => r.rows.map(row => row.description)))];
+
+  // Load skills config — gracefully degrade if missing.
+  try {
+    const res = await fetch("skills.json");
+    if (res.ok) {
+      const config = await res.json();
+      for (const [cat, entries] of Object.entries(config.categories || {})) {
+        categories[cat] = entries.map(e => e.description);
+      }
+    }
+  } catch { /* no skills config — All tab only */ }
+
+  activeSkills = new Set(allSkills);
 
   status.style.display = "none";
   document.getElementById("main").style.display = "block";
 
-  const latestRows = allRuns[allRuns.length - 1].rows;
-
-  renderSkillButtons([...skillSet]);
-  renderCards(latestRows);
-  renderCharts();
-  renderTable(latestRows);
-  renderRunList(manifest.runs);
+  initPeriodButtons();
+  initMockToggle();
+  initCategoryTabs();
+  renderSkillButtons(allSkills);
+  refreshAll();
 }
 
 init();

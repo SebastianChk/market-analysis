@@ -1,0 +1,29 @@
+{
+  "url_skills": [
+    "Python", "Java", "R", "SQL", "JavaScript",
+    "AWS", "Azure", "Google Cloud Platform", "GCP", "Snowflake", "Databricks",
+    "AI", "Cybersecurity", "Data Science", "Software Engineering"
+  ],
+  "categories": {
+    "Language": [
+      { "description": "Python",                     "exact": true },
+      { "description": "Java",                       "exact": true },
+      { "description": "R",                          "exact": true },
+      { "description": "SQL",                        "exact": true },
+      { "description": "JavaScript",                 "exact": true }
+    ],
+    "Cloud Platform": [
+      { "description": "AWS",                      "exact": true },
+      { "description": "Azure",                    "exact": true },
+      { "description": "Google Cloud Platform",    "exact": true },
+      { "description": "Databricks",               "exact": true },
+      { "description": "Snowflake",                "exact": true }
+    ],
+    "Domain": [
+      { "description": "AI",                   "exact": true },
+      { "description": "Cybersecurity",        "exact": true },
+      { "description": "Data Science",         "exact": true },
+      { "description": "Software Engineering", "exact": true }
+    ]
+  }
+}

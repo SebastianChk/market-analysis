@@ -4,47 +4,62 @@
     {
       "date": "2026-03-05",
       "files": {
-        "raw.json": "../data/jobdata_2026-03-05_raw.json",
-        "raw.csv": "../data/jobdata_2026-03-05_raw.csv",
-        "p1.html": "../data/jobdata_2026-03-05_p1.html",
-        "clean.json": "../data/jobdata_2026-03-05.json",
-        "clean.csv": "../data/jobdata_2026-03-05.csv"
+        "raw.json": "data/jobdata_2026-03-05_raw.json",
+        "raw.csv": "data/jobdata_2026-03-05_raw.csv",
+        "p1.html": "data/jobdata_2026-03-05_p1.html",
+        "6mo_p8.html": "data/jobdata_2026-03-05_6mo_p8.html",
+        "6mo_p7.html": "data/jobdata_2026-03-05_6mo_p7.html",
+        "6mo_p6.html": "data/jobdata_2026-03-05_6mo_p6.html",
+        "6mo_p5.html": "data/jobdata_2026-03-05_6mo_p5.html",
+        "6mo_p4.html": "data/jobdata_2026-03-05_6mo_p4.html",
+        "6mo_p3.html": "data/jobdata_2026-03-05_6mo_p3.html",
+        "6mo_p2.html": "data/jobdata_2026-03-05_6mo_p2.html",
+        "6mo_p1.html": "data/jobdata_2026-03-05_6mo_p1.html",
+        "3mo_p7.html": "data/jobdata_2026-03-05_3mo_p7.html",
+        "3mo_p6.html": "data/jobdata_2026-03-05_3mo_p6.html",
+        "3mo_p5.html": "data/jobdata_2026-03-05_3mo_p5.html",
+        "3mo_p4.html": "data/jobdata_2026-03-05_3mo_p4.html",
+        "3mo_p3.html": "data/jobdata_2026-03-05_3mo_p3.html",
+        "3mo_p2.html": "data/jobdata_2026-03-05_3mo_p2.html",
+        "3mo_p1.html": "data/jobdata_2026-03-05_3mo_p1.html",
+        "clean.json": "data/jobdata_2026-03-05.json",
+        "clean.csv": "data/jobdata_2026-03-05.csv"
       }
     },
     {
       "date": "2026-02-26",
       "files": {
-        "clean.json": "../data/jobdata_2026-02-26.json"
+        "clean.json": "data/jobdata_2026-02-26.json"
       }
     },
     {
       "date": "2026-02-19",
       "files": {
-        "clean.json": "../data/jobdata_2026-02-19.json"
+        "clean.json": "data/jobdata_2026-02-19.json"
       }
     },
     {
       "date": "2026-02-12",
       "files": {
-        "clean.json": "../data/jobdata_2026-02-12.json"
+        "clean.json": "data/jobdata_2026-02-12.json"
       }
     },
     {
       "date": "2026-02-05",
       "files": {
-        "clean.json": "../data/jobdata_2026-02-05.json"
+        "clean.json": "data/jobdata_2026-02-05.json"
       }
     },
     {
       "date": "2026-01-29",
       "files": {
-        "clean.json": "../data/jobdata_2026-01-29.json"
+        "clean.json": "data/jobdata_2026-01-29.json"
       }
     },
     {
       "date": "2026-01-22",
       "files": {
-        "clean.json": "../data/jobdata_2026-01-22.json"
+        "clean.json": "data/jobdata_2026-01-22.json"
       }
     }
   ]

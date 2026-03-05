@@ -17,11 +17,12 @@ Can also be run manually: uv run generate_index.py
 """
 
 import json
+import shutil
 from datetime import date
 from pathlib import Path
 
 
-DATA_DIR = Path("data")
+DATA_DIR = Path("docs/data")
 DOCS_DIR = Path("docs")
 
 
@@ -58,7 +59,7 @@ def main():
         "runs": [
             {
                 "date": run_date,
-                "files": {label: f"../data/{filename}" for label, filename in files.items()},
+                "files": {label: f"data/{filename}" for label, filename in files.items()},
             }
             for run_date, files in runs.items()
         ],
@@ -67,6 +68,11 @@ def main():
     manifest_path = DOCS_DIR / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"Generated {manifest_path} ({len(runs)} run(s))")
+
+    skills_src = Path("skills.json")
+    if skills_src.exists():
+        shutil.copy(skills_src, DOCS_DIR / "skills.json")
+        print(f"Copied {skills_src} → {DOCS_DIR / 'skills.json'}")
 
 
 if __name__ == "__main__":

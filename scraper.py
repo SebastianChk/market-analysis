@@ -14,12 +14,13 @@ Two separate config lists let you control:
   1. URL_SKILLS       — skills passed as query parameters to the site
   2. TABLE_SKILLS     — skills used to filter rows from the returned HTML table
 
-Each run produces five files in OUTPUT_DIR:
+Each run produces files in OUTPUT_DIR named by date. Data from each configured
+period (e.g. 3mo, 6mo) is combined into a single file with a `period` field:
   jobdata_YYYY-MM-DD_raw.csv   — raw table data with original column names
   jobdata_YYYY-MM-DD_raw.json  — same, as JSON
   jobdata_YYYY-MM-DD.csv       — cleaned data with renamed columns
   jobdata_YYYY-MM-DD.json      — same, as JSON
-  jobdata_YYYY-MM-DD.html      — full page snapshot
+  jobdata_YYYY-MM-DD_p1.html   — full page snapshot per page scraped (per period)
 
 Run manually:  python scraper.py
 Schedule via:  cron (Linux/Mac) or GitHub Actions
@@ -31,7 +32,7 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import TypedDict
 
@@ -44,17 +45,8 @@ log = logging.getLogger(__name__)
 
 
 # =============================================================================
-# CONFIGURATION — edit these two sections freely
+# CONFIGURATION — edit these sections freely
 # =============================================================================
-
-# Skills sent as URL query parameters (comma-joined into the `ql` param).
-# These tell the website which skills to search across.
-URL_SKILLS = [
-    "Alteryx",
-    "Python",
-    "AI",
-]
-
 
 class TableSkill(TypedDict):
     skill: str    # text to match against the row's description
@@ -62,30 +54,53 @@ class TableSkill(TypedDict):
                   # False = description just needs to contain the skill text
 
 
-# Skills used to filter rows from the HTML table.
-TABLE_SKILLS: list[TableSkill] = [
-    {"skill": "AI",                      "exact": True},
-    {"skill": "Python",                  "exact": True},
-    {"skill": "Alteryx",                 "exact": True},
-    {"skill": "Python Developer",        "exact": True},
-    {"skill": "Python Engineer",         "exact": True},
-    {"skill": "Senior Python Developer", "exact": True},
-    {"skill": "PySpark",                 "exact": False},  # catches "PySpark - Spark Python API"
+# Path to the shared skills config (also copied to docs/ for the frontend).
+SKILLS_CONFIG_PATH = "skills.json"
+
+
+def load_skills_config(path: str) -> tuple[list[str], list[TableSkill]]:
+    """Load URL skills and table filter skills from the shared skills config.
+
+    The config is the single source of truth for which skills are tracked.
+    To add, remove, or recategorise a skill, edit skills.json — no other
+    file needs to change.
+    """
+    with open(path, encoding="utf-8") as f:
+        config = json.load(f)
+
+    url_skills: list[str] = config["url_skills"]
+    table_skills: list[TableSkill] = [
+        {
+            "skill": entry.get("match", entry["description"]),
+            "exact": entry["exact"],
+        }
+        for entries in config["categories"].values()
+        for entry in entries
+    ]
+    return url_skills, table_skills
+
+# Periods to scrape. Each entry is a dict with:
+#   "label" — human-readable name attached to every row as the `period` field
+#   "p"     — the value of the `p` query parameter on the site
+PERIODS = [
+    {"label": "3mo", "p": "3"},
+    {"label": "6mo", "p": "6"},
 ]
 
 
 # =============================================================================
-# URL PARAMETERS — adjust pagination/experience filters here if needed
+# URL PARAMETERS — adjust experience/employment filters here if needed
 # =============================================================================
 
 BASE_URL = "https://www.itjobswatch.co.uk/default.aspx"
 
+# Note: `p` (period) is intentionally absent here — it is injected per-period
+# by build_params() using the PERIODS config above.
 FIXED_PARAMS = {
     "q":       "",
     "l":       "",
     "ll":      "",
     "id":      "0",
-    "p":       "6",   # experience level filter
     "e":       "5",   # employment type
     "sortby":  "",
     "orderby": "",
@@ -103,10 +118,19 @@ FIXED_PARAMS = {
 #
 # "Historical Absolute & Relative Jobs Vacancies" is a special case — it gets
 # split into _absolute and _relative fields in both raw and clean outputs.
+#
+# The rank column header changes with both period and date (e.g. "Rank 6 Months
+# to 5 Mar 2026", "Rank 3 Months to 5 Mar 2026"). It is matched by the pattern
+# RANK_HEADER_PREFIX below rather than an exact key, so it never needs updating.
+
+RANK_HEADER_PREFIX = "Rank"   # matches "Rank N Months to <date>"
+RANK_HEADER_CLEAN  = "rank"   # clean name — period is appended at parse time (e.g. "rank_6mo")
 
 COLUMN_RENAME_MAP: dict[str, str] = {
     "Description":                                    "description",
-    "Rank 6 Months to 5 Mar 2026":                   "rank_6mo",
+    # Rank header is dynamic — resolved at fetch time via RANK_HEADER_PREFIX.
+    # The placeholder key below is replaced in fetch_table() before validation.
+    "__rank__":                                        "rank",
     "Rank YoY Change":                                "rank_yoy_change",
     "Median Salary":                                  "median_salary",
     "Median Salary YoY Change":                       "median_salary_yoy_change",
@@ -114,16 +138,14 @@ COLUMN_RENAME_MAP: dict[str, str] = {
     "Live Jobs":                                      "live_jobs",
 }
 
-# Derived constants — do not edit these directly.
-_RAW_COLUMNS = list(COLUMN_RENAME_MAP.keys())
+# Derived constant — do not edit directly.
 HIST_VACANCIES_RAW_KEY = "Historical Absolute & Relative Jobs Vacancies"
-HIST_VACANCIES_IDX = _RAW_COLUMNS.index(HIST_VACANCIES_RAW_KEY)
 
 # =============================================================================
-# OUTPUT — one file per format per run, named by date
+# OUTPUT — one set of files per run, named by date
 # =============================================================================
 
-OUTPUT_DIR = "data"  # relative to script location; created automatically
+OUTPUT_DIR = "docs/data"  # relative to script location; created automatically
 
 # If more than this many pages are detected, the script will prompt before
 # continuing — to avoid hammering the site with excessive requests.
@@ -139,14 +161,23 @@ REQUEST_DELAY_SECONDS = 2
 
 @dataclass
 class FetchResult:
-    rows: list[dict]       # rows keyed by raw header names
+    rows: list[dict]            # rows keyed by raw header names
     resolved_url: str
     raw_html: str
-    soup: BeautifulSoup    # parsed HTML, used for pagination detection
+    soup: BeautifulSoup         # parsed HTML, used for pagination detection
+    rename_map: dict[str, str]  # resolved rename map for this page (rank key is concrete)
 
 
-def build_params(skills: list[str], page: int = 1) -> dict:
-    params = {**FIXED_PARAMS, "ql": ",".join(skills)}
+@dataclass
+class PeriodResult:
+    """All pages fetched for a single period."""
+    label: str
+    pages: list[FetchResult] = field(default_factory=list)
+    failed_on_page: int | None = None
+
+
+def build_params(skills: list[str], period_p: str, page: int = 1) -> dict:
+    params = {**FIXED_PARAMS, "p": period_p, "ql": ",".join(skills)}
     if page > 1:
         params["page"] = str(page)
     return params
@@ -181,11 +212,32 @@ def fetch_table(params: dict) -> FetchResult:
     header_row = table.find("tr")
     actual_headers = [" ".join(th.get_text(separator=" ").split()) for th in header_row.find_all(["th", "td"])]
 
-    # Validate against COLUMN_RENAME_MAP keys — both count and exact names.
-    expected_headers = _RAW_COLUMNS
-    if actual_headers != expected_headers:
-        added   = [h for h in actual_headers  if h not in expected_headers]
-        removed = [h for h in expected_headers if h not in actual_headers]
+    # Resolve the dynamic rank header (e.g. "Rank 6 Months to 5 Mar 2026") by
+    # finding whichever actual header starts with RANK_HEADER_PREFIX but is not
+    # "Rank YoY Change". Replace the __rank__ placeholder in the map with it.
+    rank_header = next(
+        (h for h in actual_headers
+         if h.startswith(RANK_HEADER_PREFIX) and h != "Rank YoY Change"),
+        None,
+    )
+    if rank_header is None:
+        raise ValueError(
+            f"Could not find a rank header starting with '{RANK_HEADER_PREFIX}' "
+            f"in actual headers: {actual_headers}"
+        )
+
+    # Build a resolved copy of the rename map with the real rank header substituted in.
+    resolved_rename_map = {
+        (rank_header if k == "__rank__" else k): v
+        for k, v in COLUMN_RENAME_MAP.items()
+    }
+    resolved_raw_columns = list(resolved_rename_map.keys())
+    hist_idx = resolved_raw_columns.index(HIST_VACANCIES_RAW_KEY)
+
+    # Validate resolved headers against actual page headers.
+    if actual_headers != resolved_raw_columns:
+        added   = [h for h in actual_headers       if h not in resolved_raw_columns]
+        removed = [h for h in resolved_raw_columns if h not in actual_headers]
         raise ValueError(
             f"Table structure has changed.\n"
             f"  Added   (in page, not in map) : {added   or 'none'}\n"
@@ -199,16 +251,16 @@ def fetch_table(params: dict) -> FetchResult:
         if not cells:
             continue
 
-        # Build row using raw header names.
+        # Build row using resolved raw header names.
         row = {
-            _RAW_COLUMNS[i]: cells[i].get_text(strip=True)
-            for i in range(min(len(_RAW_COLUMNS), len(cells)))
+            resolved_raw_columns[i]: cells[i].get_text(strip=True)
+            for i in range(min(len(resolved_raw_columns), len(cells)))
         }
 
         # Split the historical vacancies cell into two fields using text nodes.
         # The visual pipe separator naturally divides them into distinct nodes.
         row.pop(HIST_VACANCIES_RAW_KEY, None)
-        hist_cell = cells[HIST_VACANCIES_IDX]
+        hist_cell = cells[hist_idx]
         text_nodes = [s.strip() for s in hist_cell.strings if s.strip()]
         if len(text_nodes) >= 2:
             row[f"{HIST_VACANCIES_RAW_KEY}_absolute"] = text_nodes[0]
@@ -219,27 +271,75 @@ def fetch_table(params: dict) -> FetchResult:
 
         rows.append(row)
 
-    return FetchResult(rows=rows, resolved_url=resolved_url, raw_html=raw_html, soup=soup)
+    return FetchResult(
+        rows=rows,
+        resolved_url=resolved_url,
+        raw_html=raw_html,
+        soup=soup,
+        rename_map=resolved_rename_map,
+    )
 
 
-def rename_row(row: dict) -> dict:
+def scrape_period(
+    period: dict,
+    url_skills: list[str],
+    pages_to_scrape: int | None,
+    prompt_fn,
+) -> PeriodResult:
+    """Fetch all pages for a single period. Returns a PeriodResult."""
+    label   = period["label"]
+    period_p = period["p"]
+    result  = PeriodResult(label=label)
+
+    log.info(f"[{label}] Fetching page 1")
+    params       = build_params(url_skills, period_p, page=1)
+    first_result = fetch_table(params)
+    result.pages.append(first_result)
+
+    total_pages = detect_total_pages(first_result.soup)
+    log.info(f"[{label}] Total pages detected: {total_pages}")
+
+    if pages_to_scrape is not None:
+        n = min(pages_to_scrape, total_pages)
+    elif total_pages > PAGINATION_SANITY_LIMIT:
+        n = prompt_fn(total_pages, label)
+        if n == 0:
+            log.info(f"[{label}] Scrape cancelled.")
+            return result
+    else:
+        n = total_pages
+
+    for page in range(2, n + 1):
+        time.sleep(REQUEST_DELAY_SECONDS)
+        params = build_params(url_skills, period_p, page=page)
+        log.info(f"[{label}] Fetching page {page} of {n}…")
+        try:
+            result.pages.append(fetch_table(params))
+        except Exception as e:
+            result.failed_on_page = page
+            log.error(f"[{label}] Failed on page {page}: {e}")
+            log.warning(f"[{label}] Saving partial data from {len(result.pages)} page(s).")
+            break
+
+    return result
+
+
+def rename_row(row: dict, rename_map: dict[str, str]) -> dict:
     """Return a copy of a row with raw header names replaced by clean names.
 
     For split columns (e.g. "Historical..._absolute"), the base key is looked
-    up in COLUMN_RENAME_MAP and the suffix (_absolute, _relative) is preserved.
-    Metadata keys (date_scraped, source_url) pass through unchanged.
+    up in rename_map and the suffix (_absolute, _relative) is preserved.
+    Metadata keys (date_scraped, source_url, period, page) pass through unchanged.
     """
     renamed = {}
     for key, value in row.items():
-        # Direct match
-        if key in COLUMN_RENAME_MAP:
-            renamed[COLUMN_RENAME_MAP[key]] = value
+        if key in rename_map:
+            renamed[rename_map[key]] = value
             continue
-        # Suffix match for split columns (e.g. "Historical..._absolute")
         matched = False
-        for raw_key, clean_key in COLUMN_RENAME_MAP.items():
+        for raw_key, clean_key in rename_map.items():
             if key.startswith(raw_key + "_"):
-                suffix = key[len(raw_key):]   # e.g. "_absolute"
+                suffix = key[len(raw_key):]
                 renamed[clean_key + suffix] = value
                 matched = True
                 break
@@ -278,43 +378,84 @@ def _make_filepath(output_dir: str, today: str, extension: str, suffix: str = ""
     return os.path.join(output_dir, f"jobdata_{today}{suffix}.{extension}")
 
 
+def _row_key(row: dict) -> tuple:
+    """Return a (description, period) tuple that uniquely identifies a row.
+    Works for both raw rows (capital-D Description) and clean rows."""
+    description = row.get("description") or row.get("Description") or ""
+    return (description, row.get("period", ""))
+
+
 def save_to_csv(rows: list[dict], output_dir: str, today: str, suffix: str = "") -> str:
-    """Save rows to a dated CSV file. Returns the output path."""
+    """Merge rows into a dated CSV file (upsert by description+period).
+    Existing rows are preserved; only genuinely new keys are appended."""
     if not rows:
         log.warning("No matching rows found — CSV not written.")
         return ""
 
     filepath = _make_filepath(output_dir, today, "csv", suffix)
-    fieldnames = list(rows[0].keys())
+
+    existing: list[dict] = []
+    if os.path.exists(filepath):
+        with open(filepath, newline="", encoding="utf-8") as f:
+            existing = list(csv.DictReader(f))
+
+    existing_keys = {_row_key(r) for r in existing}
+    new_rows = [r for r in rows if _row_key(r) not in existing_keys]
+    if not new_rows:
+        log.info(f"CSV up to date (no new rows): {filepath}")
+        return filepath
+
+    merged = existing + new_rows
+    fieldnames = list(dict.fromkeys(key for row in merged for key in row))
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(merged)
 
+    log.info(f"CSV: added {len(new_rows)} new row(s), kept {len(existing)} existing.")
     return filepath
 
 
 def save_to_json(rows: list[dict], output_dir: str, today: str, suffix: str = "") -> str:
-    """Save rows to a dated JSON file. Returns the output path."""
+    """Merge rows into a dated JSON file (upsert by description+period).
+    Existing rows are preserved; only genuinely new keys are appended."""
     if not rows:
         log.warning("No matching rows found — JSON not written.")
         return ""
 
     filepath = _make_filepath(output_dir, today, "json", suffix)
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(rows, f, indent=2, ensure_ascii=False)
 
+    existing: list[dict] = []
+    if os.path.exists(filepath):
+        with open(filepath, encoding="utf-8") as f:
+            existing = json.load(f)
+
+    existing_keys = {_row_key(r) for r in existing}
+    new_rows = [r for r in rows if _row_key(r) not in existing_keys]
+    if not new_rows:
+        log.info(f"JSON up to date (no new rows): {filepath}")
+        return filepath
+
+    merged = existing + new_rows
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(merged, f, indent=2, ensure_ascii=False)
+
+    log.info(f"JSON: added {len(new_rows)} new row(s), kept {len(existing)} existing.")
     return filepath
 
 
-def save_to_html(raw_html: str, resolved_url: str, output_dir: str, today: str, page: int = 1) -> str:
+def save_to_html(raw_html: str, resolved_url: str, output_dir: str, today: str,
+                 period_label: str, page: int = 1) -> str:
     """Save the raw page HTML to a dated file, with a <base> tag injected so
-    relative URLs (CSS, images) resolve correctly when opened locally."""
-    page_suffix = f"_p{page}"
-    filepath = _make_filepath(output_dir, today, "html", page_suffix)
+    relative URLs (CSS, images) resolve correctly when opened locally.
+    Skips writing if the file already exists."""
+    suffix = f"_{period_label}_p{page}"
+    filepath = _make_filepath(output_dir, today, "html", suffix)
 
-    # Use BeautifulSoup to inject <base href="..."> so it works regardless of
-    # whether the original <head> tag has attributes or unusual casing.
+    if os.path.exists(filepath):
+        log.info(f"HTML snapshot already exists, skipping: {filepath}")
+        return filepath
+
     soup = BeautifulSoup(raw_html, "html.parser")
     head = soup.find("head")
     if head:
@@ -335,17 +476,17 @@ def save_to_html(raw_html: str, resolved_url: str, output_dir: str, today: str, 
 # ENTRY POINT
 # =============================================================================
 
-def prompt_page_limit(total_pages: int) -> int:
-    """If total pages exceeds PAGINATION_SANITY_LIMIT, ask the user how many
-    pages to scrape. Returns the number of pages to scrape, or 0 to cancel."""
+def prompt_page_limit(total_pages: int, label: str = "") -> int:
+    """Ask the user how many pages to scrape. Returns 0 to cancel."""
+    prefix = f"[{label}] " if label else ""
     print(
-        f"\n  {total_pages} pages of results detected, which exceeds the "
+        f"\n  {prefix}{total_pages} pages of results detected, which exceeds the "
         f"sanity limit of {PAGINATION_SANITY_LIMIT}.\n"
         f"  Scraping too many pages in one run may put excessive load on the site.\n"
     )
     while True:
         response = input(
-            f"  How many pages would you like to scrape? "
+            f"  {prefix}How many pages would you like to scrape? "
             f"(0 to cancel, 1–{total_pages}, or press Enter to scrape all {total_pages}): "
         ).strip()
         if response == "":
@@ -360,13 +501,13 @@ def prompt_page_limit(total_pages: int) -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Scrape IT job market data")
+    parser = argparse.ArgumentParser(description="Scrape job market data")
     page_group = parser.add_mutually_exclusive_group()
     page_group.add_argument(
         "--page-limit",
         type=int,
         metavar="N",
-        help="Maximum number of pages to scrape. Skips the interactive prompt if page count exceeds the sanity limit.",
+        help="Maximum number of pages to scrape per period. Skips the interactive prompt.",
     )
     page_group.add_argument(
         "--all-pages",
@@ -380,81 +521,56 @@ def main():
     )
     args = parser.parse_args()
 
-    url_skills = [] if args.no_filter else URL_SKILLS
-    table_skills = [] if args.no_filter else TABLE_SKILLS
+    try:
+        url_skills_cfg, table_skills_cfg = load_skills_config(SKILLS_CONFIG_PATH)
+    except FileNotFoundError:
+        log.error(f"Skills config not found: {SKILLS_CONFIG_PATH}. Create it before running.")
+        raise SystemExit(1)
+
+    url_skills   = [] if args.no_filter else url_skills_cfg
+    table_skills = [] if args.no_filter else table_skills_cfg
+    pages_to_scrape = (
+        None          if args.all_pages else
+        args.page_limit               # may be None if neither flag set
+    )
 
     if args.no_filter:
         log.info("--no-filter flag set: all skill filters disabled.")
 
     today = date.today().isoformat()
 
-    # Fetch page 1.
-    params = build_params(url_skills, page=1)
-    log.info(f"Fetching page 1: {BASE_URL} with params {params}")
-    first_result = fetch_table(params)
-    log.info(f"Resolved URL: {first_result.resolved_url}")
-
-    # Detect total pages from the first page's HTML.
-    total_pages = detect_total_pages(first_result.soup)
-    log.info(f"Total pages detected: {total_pages}")
-
-    # Determine how many pages to scrape.
-    if args.all_pages:
-        pages_to_scrape = total_pages
-        log.info(f"--all-pages flag set: scraping all {total_pages} page(s).")
-    elif args.page_limit is not None:
-        pages_to_scrape = min(args.page_limit, total_pages)
-        log.info(f"--page-limit flag set: scraping {pages_to_scrape} of {total_pages} page(s).")
-    elif total_pages > PAGINATION_SANITY_LIMIT:
-        pages_to_scrape = prompt_page_limit(total_pages)
-    else:
-        pages_to_scrape = total_pages
-
-    if pages_to_scrape == 0:
-        log.info("Scrape cancelled.")
-        return
-
-    # Collect results across all pages, starting with what we already fetched.
-    # On error, break out of the loop and save whatever was collected so far.
-    results = [first_result]
-    failed_on_page = None
-
-    for page in range(2, pages_to_scrape + 1):
-        time.sleep(REQUEST_DELAY_SECONDS)
-        params = build_params(url_skills, page=page)
-        log.info(f"Fetching page {page} of {pages_to_scrape}…")
-        try:
-            result = fetch_table(params)
-            results.append(result)
-        except Exception as e:
-            failed_on_page = page
-            log.error(f"Failed on page {page}: {e}")
-            log.warning(f"Saving partial data from {len(results)} successfully fetched page(s).")
-            break
-
-    # Filter and attach metadata across all collected pages.
+    # Scrape each period in turn.
     all_raw_rows: list[dict] = []
-    for page_num, result in enumerate(results, start=1):
-        log.info(f"Page {page_num}: {len(result.rows)} rows in table")
-        for row in result.rows:
-            if row_matches(row, table_skills):
-                row["date_scraped"] = today
-                row["source_url"] = result.resolved_url
-                row["page"] = page_num
-                all_raw_rows.append(row)
+    all_rename_maps: list[dict] = []  # parallel to all_raw_rows
+    all_html_pages: list[tuple[FetchResult, str, int]] = []
 
-    if failed_on_page:
-        log.warning(
-            f"Run incomplete — failed on page {failed_on_page} of {pages_to_scrape}. "
-            f"Output files contain data from page(s) 1–{len(results)} only."
-        )
+    for period in PERIODS:
+        log.info(f"── Period: {period['label']} ──────────────────────────")
+        period_result = scrape_period(period, url_skills, pages_to_scrape, prompt_page_limit)
 
-    log.info(f"Total rows after filtering across {len(results)} page(s): {len(all_raw_rows)}")
+        if period_result.failed_on_page:
+            log.warning(
+                f"[{period['label']}] Run incomplete — failed on page "
+                f"{period_result.failed_on_page}. "
+                f"Output contains data from page(s) 1–{len(period_result.pages)} only."
+            )
 
-    # Produce clean-named rows.
-    clean_rows = [rename_row(row) for row in all_raw_rows]
+        for page_num, fetch_result in enumerate(period_result.pages, start=1):
+            log.info(f"[{period['label']}] Page {page_num}: {len(fetch_result.rows)} rows")
+            for row in fetch_result.rows:
+                if row_matches(row, table_skills):
+                    row["period"]       = period["label"]
+                    row["date_scraped"] = today
+                    row["source_url"]   = fetch_result.resolved_url
+                    row["page"]         = page_num
+                    all_raw_rows.append(row)
+                    all_rename_maps.append(fetch_result.rename_map)
+            all_html_pages.append((fetch_result, period["label"], page_num))
 
-    # Save raw and clean data files.
+    log.info(f"Total rows after filtering across all periods: {len(all_raw_rows)}")
+
+    clean_rows = [rename_row(row, rmap) for row, rmap in zip(all_raw_rows, all_rename_maps)]
+
     for save_fn in (save_to_csv, save_to_json):
         filepath = save_fn(all_raw_rows, OUTPUT_DIR, today, suffix="_raw")
         if filepath:
@@ -465,9 +581,11 @@ def main():
         if filepath:
             log.info(f"Saved to: {filepath}")
 
-    # Save one HTML snapshot per page.
-    for page_num, result in enumerate(results, start=1):
-        filepath = save_to_html(result.raw_html, result.resolved_url, OUTPUT_DIR, today, page=page_num)
+    for fetch_result, period_label, page_num in all_html_pages:
+        filepath = save_to_html(
+            fetch_result.raw_html, fetch_result.resolved_url,
+            OUTPUT_DIR, today, period_label, page_num,
+        )
         log.info(f"Saved to: {filepath}")
 
 
