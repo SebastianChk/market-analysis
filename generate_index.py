@@ -142,6 +142,16 @@ _SHARED_FIELD_DEFINITIONS = {
 }
 
 
+def _load_categories() -> dict[str, list[str]]:
+    """Load category → [skill names] from skills.json. Returns {} if unavailable."""
+    skills_path = Path("skills.json")
+    if not skills_path.exists():
+        return {}
+    config = json.loads(skills_path.read_text(encoding="utf-8"))
+    return {cat: [e["description"] for e in entries]
+            for cat, entries in config.get("categories", {}).items()}
+
+
 def generate_latest_json(runs: dict[str, dict]) -> None:
     """Write docs/latest_6mo.json and docs/latest_3mo.json — LLM-readable snapshots."""
     if not runs:
@@ -157,6 +167,14 @@ def generate_latest_json(runs: dict[str, dict]) -> None:
         return
 
     raw_rows: list[dict] = json.loads(clean_path.read_text(encoding="utf-8"))
+    categories = _load_categories()
+
+    # Build a skill_name → category lookup for grouping.
+    skill_to_category = {
+        skill: cat
+        for cat, skills in categories.items()
+        for skill in skills
+    }
 
     for period, cfg in _PERIOD_CONFIGS.items():
         skills = []
@@ -176,6 +194,15 @@ def generate_latest_json(runs: dict[str, dict]) -> None:
 
         skills.sort(key=lambda r: r["demand_rank"] if r["demand_rank"] is not None else 9999)
 
+        # Group by category, preserving category order from skills.json.
+        # Skills not found in any category fall into "Other".
+        grouped: dict[str, list] = {cat: [] for cat in categories}
+        for skill in skills:
+            cat = skill_to_category.get(skill["skill"], "Other")
+            grouped.setdefault(cat, []).append(skill)
+        # Drop empty categories.
+        grouped = {cat: entries for cat, entries in grouped.items() if entries}
+
         output = {
             "_meta": {
                 "description": (
@@ -194,7 +221,7 @@ def generate_latest_json(runs: dict[str, dict]) -> None:
                 "caveats": _SHARED_CAVEATS,
                 "field_definitions": _SHARED_FIELD_DEFINITIONS,
             },
-            "skills": skills,
+            "skills": grouped,
         }
 
         out_path = DOCS_DIR / cfg["filename"]
