@@ -1,13 +1,22 @@
 {
-  "generated": "2026-03-05",
+  "generated": "2026-03-06",
   "runs": [
+    {
+      "date": "2026-03-06",
+      "files": {
+        "raw.json": "data/jobdata_2026-03-06_raw.json",
+        "raw.csv": "data/jobdata_2026-03-06_raw.csv",
+        "6mo_p1.html": "data/jobdata_2026-03-06_6mo_p1.html",
+        "3mo_p1.html": "data/jobdata_2026-03-06_3mo_p1.html",
+        "clean.json": "data/jobdata_2026-03-06.json",
+        "clean.csv": "data/jobdata_2026-03-06.csv"
+      }
+    },
     {
       "date": "2026-03-05",
       "files": {
         "raw.json": "data/jobdata_2026-03-05_raw.json",
         "raw.csv": "data/jobdata_2026-03-05_raw.csv",
-        "6mo_p1.html": "data/jobdata_2026-03-05_6mo_p1.html",
-        "3mo_p1.html": "data/jobdata_2026-03-05_3mo_p1.html",
         "clean.json": "data/jobdata_2026-03-05.json",
         "clean.csv": "data/jobdata_2026-03-05.csv"
       }
