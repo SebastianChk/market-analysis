@@ -10,9 +10,9 @@ Job Market Scraper
 ==================
 Fetches permanent job market data and saves to CSV, JSON, and HTML.
 
-Two separate config lists let you control:
-  1. URL_SKILLS       — skills passed as query parameters to the site
-  2. TABLE_SKILLS     — skills used to filter rows from the returned HTML table
+TABLE_SKILLS in skills.json controls which rows are kept from the full results.
+No server-side skill filter is applied — all pages are fetched and filtered
+client-side to avoid URL truncation silently dropping skills.
 
 Each run produces files in OUTPUT_DIR named by date. Data from each configured
 period (e.g. 3mo, 6mo) is combined into a single file with a `period` field:
@@ -58,8 +58,8 @@ class TableSkill(TypedDict):
 SKILLS_CONFIG_PATH = "skills.json"
 
 
-def load_skills_config(path: str) -> tuple[list[str], list[TableSkill]]:
-    """Load URL skills and table filter skills from the shared skills config.
+def load_skills_config(path: str) -> list[TableSkill]:
+    """Load table filter skills from the shared skills config.
 
     The config is the single source of truth for which skills are tracked.
     To add, remove, or recategorise a skill, edit skills.json — no other
@@ -68,8 +68,7 @@ def load_skills_config(path: str) -> tuple[list[str], list[TableSkill]]:
     with open(path, encoding="utf-8") as f:
         config = json.load(f)
 
-    url_skills: list[str] = config["url_skills"]
-    table_skills: list[TableSkill] = [
+    return [
         {
             "skill": entry.get("match", entry["description"]),
             "exact": entry["exact"],
@@ -77,7 +76,6 @@ def load_skills_config(path: str) -> tuple[list[str], list[TableSkill]]:
         for entries in config["categories"].values()
         for entry in entries
     ]
-    return url_skills, table_skills
 
 # Periods to scrape. Each entry is a dict with:
 #   "label" — human-readable name attached to every row as the `period` field
@@ -149,7 +147,7 @@ OUTPUT_DIR = "docs/data"  # relative to script location; created automatically
 
 # If more than this many pages are detected, the script will prompt before
 # continuing — to avoid hammering the site with excessive requests.
-PAGINATION_SANITY_LIMIT = 2
+PAGINATION_SANITY_LIMIT = 100
 
 # Delay in seconds between paginated requests — be a considerate scraper.
 REQUEST_DELAY_SECONDS = 2
@@ -176,8 +174,8 @@ class PeriodResult:
     failed_on_page: int | None = None
 
 
-def build_params(skills: list[str], period_p: str, page: int = 1) -> dict:
-    params = {**FIXED_PARAMS, "p": period_p, "ql": ",".join(skills)}
+def build_params(period_p: str, page: int = 1) -> dict:
+    params = {**FIXED_PARAMS, "p": period_p}
     if page > 1:
         params["page"] = str(page)
     return params
@@ -282,7 +280,6 @@ def fetch_table(params: dict) -> FetchResult:
 
 def scrape_period(
     period: dict,
-    url_skills: list[str],
     pages_to_scrape: int | None,
     prompt_fn,
 ) -> PeriodResult:
@@ -292,7 +289,7 @@ def scrape_period(
     result  = PeriodResult(label=label)
 
     log.info(f"[{label}] Fetching page 1")
-    params       = build_params(url_skills, period_p, page=1)
+    params       = build_params(period_p, page=1)
     first_result = fetch_table(params)
     result.pages.append(first_result)
 
@@ -311,7 +308,7 @@ def scrape_period(
 
     for page in range(2, n + 1):
         time.sleep(REQUEST_DELAY_SECONDS)
-        params = build_params(url_skills, period_p, page=page)
+        params = build_params(period_p, page=page)
         log.info(f"[{label}] Fetching page {page} of {n}…")
         try:
             result.pages.append(fetch_table(params))
@@ -522,12 +519,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        url_skills_cfg, table_skills_cfg = load_skills_config(SKILLS_CONFIG_PATH)
+        table_skills_cfg = load_skills_config(SKILLS_CONFIG_PATH)
     except FileNotFoundError:
         log.error(f"Skills config not found: {SKILLS_CONFIG_PATH}. Create it before running.")
         raise SystemExit(1)
 
-    url_skills   = [] if args.no_filter else url_skills_cfg
     table_skills = [] if args.no_filter else table_skills_cfg
     pages_to_scrape = (
         None          if args.all_pages else
@@ -546,7 +542,7 @@ def main():
 
     for period in PERIODS:
         log.info(f"── Period: {period['label']} ──────────────────────────")
-        period_result = scrape_period(period, url_skills, pages_to_scrape, prompt_page_limit)
+        period_result = scrape_period(period, pages_to_scrape, prompt_page_limit)
 
         if period_result.failed_on_page:
             log.warning(

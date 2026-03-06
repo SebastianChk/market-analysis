@@ -24,9 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Run scraper
-        # --page-limit 20 is a safe default for scheduled runs — increase as needed.
-        # Use --all-pages if you want everything (be mindful of rate limits).
-        run: uv run scraper.py --page-limit 20
+        run: uv run scraper.py --all-pages
 
       - name: Generate GitHub Pages index
         run: uv run generate_index.py
