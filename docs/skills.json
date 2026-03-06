@@ -1,9 +1,4 @@
 {
-  "url_skills": [
-    "Python", "Java", "R", "SQL", "JavaScript",
-    "AWS", "Azure", "Google Cloud Platform", "GCP", "Snowflake", "Databricks",
-    "AI", "Cybersecurity", "Data Science", "Software Engineering"
-  ],
   "categories": {
     "Language": [
       { "description": "Python",                     "exact": true },

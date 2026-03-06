@@ -141,6 +141,26 @@
         "market_share_pct": 12.63,
         "median_salary_gbp": 70000,
         "median_salary_yoy_change_pct": 5.51
+      },
+      {
+        "skill": "Software Engineering",
+        "demand_rank": 24,
+        "demand_rank_yoy_change": -8,
+        "live_jobs": 1897,
+        "total_postings": 2641,
+        "market_share_pct": 6.45,
+        "median_salary_gbp": 70000,
+        "median_salary_yoy_change_pct": -3.44
+      },
+      {
+        "skill": "Data Science",
+        "demand_rank": 139,
+        "demand_rank_yoy_change": -29,
+        "live_jobs": 1053,
+        "total_postings": 559,
+        "market_share_pct": 1.37,
+        "median_salary_gbp": 70000,
+        "median_salary_yoy_change_pct": -2.76
       }
     ]
   }

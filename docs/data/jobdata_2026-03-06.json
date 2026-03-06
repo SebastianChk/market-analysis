@@ -306,5 +306,61 @@
     "date_scraped": "2026-03-06",
     "source_url": "https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&ql=Python%2CJava%2CR%2CSQL%2CJavaScript%2CAWS%2CAzure%2CGoogle+Cloud+Platform%2CGCP%2CSnowflake%2CDatabricks%2CAI%2CCybersecurity%2CData+Science%2CSoftware+Engineering",
     "page": 1
+  },
+  {
+    "description": "Software Engineering",
+    "rank": "24",
+    "rank_yoy_change": "-8",
+    "median_salary": "£70,000",
+    "median_salary_yoy_change": "-3.44%",
+    "live_jobs": "1,897",
+    "historical_vacancies_absolute": "2,641",
+    "historical_vacancies_relative": "6.45%",
+    "period": "3mo",
+    "date_scraped": "2026-03-06",
+    "source_url": "https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3",
+    "page": 1
+  },
+  {
+    "description": "Data Science",
+    "rank": "139",
+    "rank_yoy_change": "-29",
+    "median_salary": "£70,000",
+    "median_salary_yoy_change": "-2.76%",
+    "live_jobs": "1,053",
+    "historical_vacancies_absolute": "559",
+    "historical_vacancies_relative": "1.37%",
+    "period": "3mo",
+    "date_scraped": "2026-03-06",
+    "source_url": "https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=3",
+    "page": 3
+  },
+  {
+    "description": "Software Engineering",
+    "rank": "28",
+    "rank_yoy_change": "-11",
+    "median_salary": "£70,000",
+    "median_salary_yoy_change": "-2.09%",
+    "live_jobs": "1,897",
+    "historical_vacancies_absolute": "4,535",
+    "historical_vacancies_relative": "6.28%",
+    "period": "6mo",
+    "date_scraped": "2026-03-06",
+    "source_url": "https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6",
+    "page": 1
+  },
+  {
+    "description": "Data Science",
+    "rank": "162",
+    "rank_yoy_change": "-26",
+    "median_salary": "£70,000",
+    "median_salary_yoy_change": "-",
+    "live_jobs": "1,053",
+    "historical_vacancies_absolute": "1,005",
+    "historical_vacancies_relative": "1.39%",
+    "period": "6mo",
+    "date_scraped": "2026-03-06",
+    "source_url": "https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=4",
+    "page": 4
   }
 ]
