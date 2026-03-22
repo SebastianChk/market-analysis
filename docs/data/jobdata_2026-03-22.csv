@@ -1,0 +1,27 @@
+description,rank,rank_yoy_change,median_salary,median_salary_yoy_change,live_jobs,historical_vacancies_absolute,historical_vacancies_relative,period,date_scraped,source_url,page
+Azure,5,+2,"£65,000",-,"3,343","5,170",13.23%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Python,11,0,"£65,000",-7.14%,"3,169","3,022",7.73%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+AI,12,+19,"£70,000",+5.58%,"3,340","2,901",7.42%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Cybersecurity,14,+25,"£57,239",-0.45%,"1,595","2,863",7.32%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Software Engineering,16,-1,"£75,000",+4.17%,"1,848","2,723",6.97%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+AWS,17,-4,"£70,000",-,"2,367","2,580",6.60%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+SQL,19,-9,"£60,000",-,"2,396","2,502",6.40%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Java,56,-15,"£70,000",-11.17%,824,"1,145",2.93%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=2,2
+JavaScript,65,-39,"£60,000",-9.22%,"1,092","1,020",2.61%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=2,2
+Data Science,134,-24,"£70,000",-3.44%,862,592,1.51%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=3,3
+Databricks,206,-19,"£85,000",+6.25%,418,366,0.94%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=5,5
+Snowflake,326,-64,"£85,000",-5.55%,208,191,0.49%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=9,9
+R,368,-63,"£37,500",-39.51%,223,146,0.37%,3mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=11,11
+AI,4,+30,"£70,000",-3.44%,"3,340","10,155",13.37%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Azure,6,+1,"£62,500",-0.79%,"3,343","9,658",12.72%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Cybersecurity,8,+31,"£52,500",-13.93%,"1,595","9,106",11.99%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Python,17,-5,"£65,000",-13.33%,"3,169","5,612",7.39%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+SQL,23,-14,"£57,500",-4.16%,"2,396","5,029",6.62%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+AWS,24,-14,"£70,000",-3.44%,"2,367","4,956",6.53%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Software Engineering,26,-10,"£70,000",-2.76%,"1,848","4,794",6.31%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+JavaScript,69,-46,"£57,500",-11.53%,"1,092","2,217",2.92%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=2,2
+Java,71,-27,"£75,000",-,824,"2,143",2.82%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=2,2
+Data Science,163,-34,"£70,000",-,862,"1,028",1.35%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=4,4
+Databricks,240,-22,"£85,000",+9.67%,418,661,0.87%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=6,6
+Snowflake,324,+10,"£81,250",-13.33%,208,437,0.58%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=8,8
+R,399,-38,"£30,500",-49.16%,223,324,0.43%,6mo,2026-03-22,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=10,10
