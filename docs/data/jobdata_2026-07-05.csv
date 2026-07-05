@@ -1,0 +1,27 @@
+description,rank,rank_yoy_change,median_salary,median_salary_yoy_change,live_jobs,historical_vacancies_absolute,historical_vacancies_relative,period,date_scraped,source_url,page
+Azure,5,Up 1 place+1,"£62,500",+4.16%,"3,894","6,548",12.09%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+AI,10,Down -1 place-1,"£70,000",+7.69%,"5,997","4,422",8.16%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Software Engineering,14,Up 5 places+5,"£70,000",-6.66%,"2,778","4,080",7.53%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+AWS,18,Down -5 places-5,"£72,500",-3.33%,"2,992","3,569",6.59%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+SQL,19,Down -5 places-5,"£56,000",-2.60%,"2,480","3,428",6.33%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Cybersecurity,20,Up 18 places+18,"£60,000",+4.34%,"2,436","3,411",6.30%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Python,21,Down -11 places-11,"£70,000",-6.66%,"3,689","3,377",6.23%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3,1
+Java,55,Down -34 places-34,"£70,000",-6.04%,"1,180","1,429",2.64%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=2,2
+JavaScript,63,Down -28 places-28,"£57,500",-14.81%,"1,114","1,275",2.35%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=2,2
+Data Science,165,Up 2 places+2,"£75,000",-,"1,180",648,1.20%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=4,4
+Databricks,221,Down -149 places-149,"£85,000",+13.33%,536,459,0.85%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=5,5
+Snowflake,385,Down -74 places-74,"£82,500",+3.12%,280,189,0.35%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=11,11
+R,483,Down -153 places-153,"£65,000",+8.33%,269,83,0.15%,3mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=3&page=19,19
+Azure,4,Up 3 places+3,"£65,000",+8.33%,"3,894","12,679",13.11%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+AI,9,Up 5 places+5,"£70,000",+5.58%,"5,997","7,839",8.11%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Software Engineering,12,Up 8 places+8,"£72,500",-3.33%,"2,778","6,976",7.21%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Python,16,Down -6 places-6,"£70,000",-3.44%,"3,689","6,821",7.05%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Cybersecurity,18,Up 18 places+18,"£60,000",+4.34%,"2,436","6,666",6.89%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+AWS,20,Down -8 places-8,"£72,500",-,"2,992","6,339",6.56%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+SQL,21,Down -10 places-10,"£57,500",-4.16%,"2,480","6,287",6.50%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6,1
+Java,55,Down -28 places-28,"£70,000",-6.66%,"1,180","2,639",2.73%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=2,2
+JavaScript,69,Down -38 places-38,"£57,500",-13.14%,"1,114","2,333",2.41%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=2,2
+Data Science,156,Down -18 places-18,"£70,000",-6.66%,"1,180","1,282",1.33%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=4,4
+Databricks,213,Down -107 places-107,"£85,000",+9.67%,536,909,0.94%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=5,5
+Snowflake,387,Down -67 places-67,"£85,000",-,280,436,0.45%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=9,9
+R,543,Down -158 places-158,"£52,000",-16.12%,269,222,0.23%,6mo,2026-07-05,https://www.itjobswatch.co.uk/default.aspx?q=&l=&ll=&id=0&e=5&sortby=&orderby=&p=6&page=15,15
