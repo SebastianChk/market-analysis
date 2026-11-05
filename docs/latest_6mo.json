@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Latest UK IT job market snapshot for a curated set of technology skills. Data sourced from IT Jobs Watch (itjobswatch.co.uk), which aggregates permanent job listings across the UK. Scraped weekly via GitHub Actions.",
-    "snapshot_date": "2026-11-03",
+    "snapshot_date": "2026-11-05",
     "data_source": "IT Jobs Watch (itjobswatch.co.uk)",
     "market": "United Kingdom — permanent roles only",
     "period": "6mo",
@@ -32,51 +32,51 @@
         "skill": "Python",
         "demand_rank": 28,
         "demand_rank_yoy_change": null,
-        "live_jobs": 4295,
-        "total_postings": 6401,
-        "market_share_pct": 5.23,
-        "median_salary_gbp": 70150,
-        "median_salary_yoy_change_pct": 0.21
+        "live_jobs": 3139,
+        "total_postings": 6348,
+        "market_share_pct": 5.22,
+        "median_salary_gbp": 70000,
+        "median_salary_yoy_change_pct": null
       },
       {
         "skill": "SQL",
         "demand_rank": 29,
         "demand_rank_yoy_change": null,
-        "live_jobs": 2996,
-        "total_postings": 6282,
-        "market_share_pct": 5.14,
+        "live_jobs": 2209,
+        "total_postings": 6191,
+        "market_share_pct": 5.09,
         "median_salary_gbp": 60000,
         "median_salary_yoy_change_pct": 9.09
       },
       {
         "skill": "Java",
-        "demand_rank": 57,
+        "demand_rank": 60,
         "demand_rank_yoy_change": null,
-        "live_jobs": 1422,
-        "total_postings": 3318,
-        "market_share_pct": 2.71,
+        "live_jobs": 906,
+        "total_postings": 3291,
+        "market_share_pct": 2.7,
         "median_salary_gbp": 70000,
         "median_salary_yoy_change_pct": -6.66
       },
       {
         "skill": "JavaScript",
-        "demand_rank": 81,
+        "demand_rank": 85,
         "demand_rank_yoy_change": null,
-        "live_jobs": 1071,
-        "total_postings": 2526,
-        "market_share_pct": 2.07,
+        "live_jobs": 790,
+        "total_postings": 2483,
+        "market_share_pct": 2.04,
         "median_salary_gbp": 60000,
         "median_salary_yoy_change_pct": null
       },
       {
         "skill": "R",
-        "demand_rank": 581,
+        "demand_rank": 572,
         "demand_rank_yoy_change": null,
-        "live_jobs": 280,
+        "live_jobs": 218,
         "total_postings": 265,
         "market_share_pct": 0.22,
         "median_salary_gbp": 70000,
-        "median_salary_yoy_change_pct": 55.55
+        "median_salary_yoy_change_pct": 60.91
       }
     ],
     "Cloud Platform": [
@@ -84,41 +84,41 @@
         "skill": "Azure",
         "demand_rank": 9,
         "demand_rank_yoy_change": null,
-        "live_jobs": 4501,
-        "total_postings": 10371,
-        "market_share_pct": 8.48,
+        "live_jobs": 3663,
+        "total_postings": 10223,
+        "market_share_pct": 8.4,
         "median_salary_gbp": 65000,
         "median_salary_yoy_change_pct": 8.33
       },
       {
         "skill": "AWS",
-        "demand_rank": 20,
+        "demand_rank": 21,
         "demand_rank_yoy_change": null,
-        "live_jobs": 3484,
-        "total_postings": 7073,
-        "market_share_pct": 5.78,
+        "live_jobs": 2456,
+        "total_postings": 6980,
+        "market_share_pct": 5.73,
         "median_salary_gbp": 71991,
         "median_salary_yoy_change_pct": -2.45
       },
       {
         "skill": "Databricks",
-        "demand_rank": 239,
+        "demand_rank": 242,
         "demand_rank_yoy_change": null,
-        "live_jobs": 606,
-        "total_postings": 992,
-        "market_share_pct": 0.81,
+        "live_jobs": 413,
+        "total_postings": 977,
+        "market_share_pct": 0.8,
         "median_salary_gbp": 80000,
-        "median_salary_yoy_change_pct": 6.66
+        "median_salary_yoy_change_pct": 3.22
       },
       {
         "skill": "Snowflake",
-        "demand_rank": 418,
+        "demand_rank": 410,
         "demand_rank_yoy_change": null,
-        "live_jobs": 490,
-        "total_postings": 515,
+        "live_jobs": 302,
+        "total_postings": 508,
         "market_share_pct": 0.42,
         "median_salary_gbp": 85000,
-        "median_salary_yoy_change_pct": 6.25
+        "median_salary_yoy_change_pct": 3.03
       }
     ],
     "Domain": [
@@ -126,41 +126,41 @@
         "skill": "AI",
         "demand_rank": 8,
         "demand_rank_yoy_change": null,
-        "live_jobs": 6754,
-        "total_postings": 10633,
-        "market_share_pct": 8.69,
-        "median_salary_gbp": 74250,
-        "median_salary_yoy_change_pct": 6.07
+        "live_jobs": 8304,
+        "total_postings": 10626,
+        "market_share_pct": 8.73,
+        "median_salary_gbp": 74566,
+        "median_salary_yoy_change_pct": 6.52
       },
       {
         "skill": "Software Engineering",
         "demand_rank": 10,
         "demand_rank_yoy_change": null,
-        "live_jobs": 3345,
-        "total_postings": 9844,
-        "market_share_pct": 8.05,
+        "live_jobs": 2273,
+        "total_postings": 9817,
+        "market_share_pct": 8.06,
         "median_salary_gbp": 72500,
         "median_salary_yoy_change_pct": -3.33
       },
       {
         "skill": "Cybersecurity",
-        "demand_rank": 24,
+        "demand_rank": 25,
         "demand_rank_yoy_change": null,
-        "live_jobs": 3169,
-        "total_postings": 6793,
-        "market_share_pct": 5.55,
+        "live_jobs": 2433,
+        "total_postings": 6795,
+        "market_share_pct": 5.58,
         "median_salary_gbp": 60000,
-        "median_salary_yoy_change_pct": 16.22
+        "median_salary_yoy_change_pct": 20.0
       },
       {
         "skill": "Data Science",
         "demand_rank": 127,
         "demand_rank_yoy_change": null,
-        "live_jobs": 1380,
-        "total_postings": 1737,
+        "live_jobs": 1004,
+        "total_postings": 1732,
         "market_share_pct": 1.42,
         "median_salary_gbp": 75000,
-        "median_salary_yoy_change_pct": 5.34
+        "median_salary_yoy_change_pct": 5.63
       }
     ]
   }
